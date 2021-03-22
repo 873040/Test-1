@@ -2,91 +2,105 @@ _schema-version: "3.2"
 ID: techpoc
 version: 0.0.1
 modules:
-  - name: techpoc-destination-content
-    type: com.sap.application.content
-    requires:
-      - name: techpoc-destination-service
-        parameters:
-          content-target: true
-      - name: techpoc_html_repo_host
-        parameters:
-          service-key:
-            name: techpoc_html_repo_host-key
-      - name: uaa_techpoc
-        parameters:
-          service-key:
-            name: uaa_techpoc-key
+- name: techpoc-destination-content
+  type: com.sap.application.content
+  requires:
+  - name: techpoc-destination-service
     parameters:
-      content:
+      content-target: true
+  - name: techpoc_html_repo_host
+    parameters:
+      service-key:
+        name: techpoc_html_repo_host-key
+  - name: uaa_techpoc
+    parameters:
+      service-key:
+        name: uaa_techpoc-key
+  parameters:
+    content:
+      instance:
+        destinations:
+        - Name: techpoc_techpoc_html_repo_host
+          ServiceInstanceName: techpoc-html5-app-host-service
+          ServiceKeyName: techpoc_html_repo_host-key
+          sap.cloud.service: techpoc
+        - Authentication: OAuth2UserTokenExchange
+          Name: techpoc_uaa_techpoc
+          ServiceInstanceName: techpoc-xsuaa-service
+          ServiceKeyName: uaa_techpoc-key
+          sap.cloud.service: techpoc
+        existing_destinations_policy: ignore
+  build-parameters:
+    no-source: true
+- name: techpoc-app-content
+  type: com.sap.application.content
+  path: .
+  requires:
+  - name: techpoc_html_repo_host
+    parameters:
+      content-target: true
+  build-parameters:
+    build-result: resources
+    requires:
+    - artifacts:
+      - products.zip
+      name: products
+      target-path: resources/
+    - artifacts:
+      - magic.zip
+      name: magic
+      target-path: resources/
+- name: products
+  type: html5
+  path: products
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+- name: magic
+  type: html5
+  path: magic
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+resources:
+- name: techpoc-destination-service
+  type: org.cloudfoundry.managed-service
+  parameters:
+    config:
+      HTML5Runtime_enabled: true
+      init_data:
         instance:
           destinations:
-            - Name: techpoc_techpoc_html_repo_host
-              ServiceInstanceName: techpoc-html5-app-host-service
-              ServiceKeyName: techpoc_html_repo_host-key
-              sap.cloud.service: techpoc
-            - Authentication: OAuth2UserTokenExchange
-              Name: techpoc_uaa_techpoc
-              ServiceInstanceName: techpoc-xsuaa-service
-              ServiceKeyName: uaa_techpoc-key
-              sap.cloud.service: techpoc
-          existing_destinations_policy: ignore
-    build-parameters:
-      no-source: true
-  - name: techpoc-app-content
-    type: com.sap.application.content
-    path: .
-    requires:
-      - name: techpoc_html_repo_host
-        parameters:
-          content-target: true
-    build-parameters:
-      build-result: resources
-      requires:
-        - artifacts:
-            - products.zip
-          name: products
-          target-path: resources/
-  - name: products
-    type: html5
-    path: products
-    build-parameters:
-      build-result: dist
-      builder: custom
-      commands:
-        - npm install
-        - npm run build:cf
-      supported-platforms: []
-resources:
-  - name: techpoc-destination-service
-    type: org.cloudfoundry.managed-service
-    parameters:
-      config:
-        HTML5Runtime_enabled: true
-        init_data:
-          instance:
-            destinations:
-              - Authentication: NoAuthentication
-                Name: ui5
-                ProxyType: Internet
-                Type: HTTP
-                URL: https://ui5.sap.com
-            existing_destinations_policy: update
-        version: 1.0.0
-      service: destination
-      service-name: techpoc-destination-service
-      service-plan: lite
-  - name: techpoc_html_repo_host
-    type: org.cloudfoundry.managed-service
-    parameters:
-      service: html5-apps-repo
-      service-name: techpoc-html5-app-host-service
-      service-plan: app-host
-  - name: uaa_techpoc
-    type: org.cloudfoundry.managed-service
-    parameters:
-      path: ./xs-security.json
-      service: xsuaa
-      service-name: techpoc-xsuaa-service
-      service-plan: application
+          - Authentication: NoAuthentication
+            Name: ui5
+            ProxyType: Internet
+            Type: HTTP
+            URL: https://ui5.sap.com
+          existing_destinations_policy: update
+      version: 1.0.0
+    service: destination
+    service-name: techpoc-destination-service
+    service-plan: lite
+- name: techpoc_html_repo_host
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: html5-apps-repo
+    service-name: techpoc-html5-app-host-service
+    service-plan: app-host
+- name: uaa_techpoc
+  type: org.cloudfoundry.managed-service
+  parameters:
+    path: ./xs-security.json
+    service: xsuaa
+    service-name: techpoc-xsuaa-service
+    service-plan: application
 parameters:
   deploy_mode: html5-repo

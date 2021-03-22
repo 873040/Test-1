@@ -1,0 +1,13 @@
+<mvc:View xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" controllerName="magic.controller.magicView" displayBlock="true">
+	<Shell id="shell">
+		<App id="app">
+			<pages>
+				<Page id="page" title="{i18n>title}">
+					<content>
+					    <Image src="https://ui5.sap.com/resources/sap/ui/documentation/sdk/images/logo_ui5.png" width="140px" height="140px" id="image0"/>
+					</content>
+				</Page>
+			</pages>
+		</App>
+	</Shell>
+</mvc:View>
